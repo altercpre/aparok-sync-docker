@@ -1,17 +1,17 @@
-# Docker Compose for any-sync
+# Docker Compose for aparok-sync
 
-A self-hosted any-sync network, designed for personal use, review, or testing purposes.
+A self-hosted aparok-sync network, designed for personal use, review, or testing purposes.
 
 > [!IMPORTANT]
-> This setup is suitable for personal self-hosted any-sync networks.
-> For high-load production deployments, consider using the [Puppet](https://github.com/anyproto/puppet-anysync) or [Ansible](https://github.com/anyproto/ansible-anysync) modules.
+> This setup is suitable for personal self-hosted aparok-sync networks.
+> For high-load production deployments, consider using the [Puppet](https://github.com/altercpre/puppet-anysync) or [Ansible](https://github.com/altercpre/ansible-anysync) modules.
 
 > [!WARNING]
 > Before upgrading, read the [Upgrade Guide](../../wiki/Upgrade-Guide).
 
 > [!IMPORTANT]
 > MinIO has been replaced by [Garage](https://garagehq.deuxfleurs.fr/) (see
-> [#178](https://github.com/anyproto/any-sync-dockercompose/issues/178)).
+> [#178](https://github.com/altercpre/aparok-sync-docker/issues/178)).
 > Existing installs must run a one-off data migration — see the [Upgrade Guide](../../wiki/Upgrade-Guide).
 > The stack refuses to start until the migration is done; no data is deleted.
 
@@ -26,23 +26,23 @@ The stack runs the following services:
 
 | Service | Role | Depends on |
 |---|---|---|
-| `any-sync-coordinator` | Network coordinator, manages spaces and members | MongoDB |
-| `any-sync-node` ×3 | Document sync nodes | coordinator |
-| `any-sync-filenode` | File storage node | coordinator, Garage, Redis |
-| `any-sync-consensusnode` | Consensus for conflict resolution | coordinator |
+| `aparok-sync-coordinator` | Network coordinator, manages spaces and members | MongoDB |
+| `aparok-sync-node` ×3 | Document sync nodes | coordinator |
+| `aparok-sync-filenode` | File storage node | coordinator, Garage, Redis |
+| `aparok-sync-consensusnode` | Consensus for conflict resolution | coordinator |
 | `netcheck` | Periodic connectivity health monitor | all nodes |
 | MongoDB | Coordinator state | — |
 | Redis | Filenode index | — |
 | Garage | S3-compatible object storage for files | — |
 
-Optional service: `anytype-cli` (commented out in `docker-compose.yml`) — HTTP/gRPC API server for automation.
+Optional service: `aparok-cli` (commented out in `docker-compose.yml`) — HTTP/gRPC API server for automation.
 
 ## Getting Started
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/anyproto/any-sync-dockercompose.git
-   cd any-sync-dockercompose
+   git clone https://github.com/altercpre/aparok-sync-docker.git
+   cd aparok-sync-dockercompose
    ```
 
 2. **Create your env file:**
@@ -55,7 +55,7 @@ Optional service: `anytype-cli` (commented out in `docker-compose.yml`) — HTTP
    ```bash
    ./update-versions.sh
    ```
-   This updates the `ANY_SYNC_*_VERSION` variables in `.env` from the Anytype API.
+   This updates the `ANY_SYNC_*_VERSION` variables in `.env` from the Aparok API.
    Skip this step to use the pinned versions already in `.env.example`.
 
 4. **Start:**
@@ -65,9 +65,9 @@ Optional service: `anytype-cli` (commented out in `docker-compose.yml`) — HTTP
    ```
    On first run this generates configs in `./etc/` and starts all services.
 
-5. **Connect Anytype client:**
-   Upload `./etc/client.yml` to the Anytype app as your self-hosted network config.
-   See [Anytype docs](https://doc.anytype.io/anytype-docs/data-and-security/self-hosting#switching-between-networks).
+5. **Connect Aparok client:**
+   Upload `./etc/client.yml` to the Aparok app as your self-hosted network config.
+   See [Aparok docs](https://doc.aparok.io/aparok-docs/data-and-security/self-hosting#switching-between-networks).
 
 ## Configuration
 
@@ -78,7 +78,7 @@ Copy `.env.example` to `.env` and edit it directly. Common customizations:
 EXTERNAL_LISTEN_HOSTS="1.2.3.4"
 
 # Custom storage path (default: ./storage)
-STORAGE_DIR="/mnt/data/any-sync"
+STORAGE_DIR="/mnt/data/aparok-sync"
 
 # Per-daemon memory limit (default: 500M)
 ANY_SYNC_DAEMONS_MEMORY_LIMIT=1G
@@ -111,21 +111,21 @@ Full guides are in the [Wiki](../../wiki):
 - [Usage Guide](../../wiki/Usage)
 - [Configuration](../../wiki/Configuration)
 - [Upgrade Guide](../../wiki/Upgrade-Guide)
-- [Anytype CLI](../../wiki/Anytype-cli)
+- [Aparok CLI](../../wiki/Aparok-cli)
 
 ## Contribution
 
-Thank you for your desire to develop Anytype together!
+Thank you for your desire to develop Aparok together!
 
-❤️ This project and everyone involved in it is governed by the [Code of Conduct](https://github.com/anyproto/.github/blob/main/docs/CODE_OF_CONDUCT.md).
+❤️ This project and everyone involved in it is governed by the [Code of Conduct](https://github.com/altercpre/.github/blob/main/docs/CODE_OF_CONDUCT.md).
 
-🧑‍💻 Check out our [contributing guide](https://github.com/anyproto/.github/blob/main/docs/CONTRIBUTING.md) to learn about asking questions, creating issues, or submitting pull requests.
+🧑‍💻 Check out our [contributing guide](https://github.com/altercpre/.github/blob/main/docs/CONTRIBUTING.md) to learn about asking questions, creating issues, or submitting pull requests.
 
-🫢 For security findings, please email [security@anytype.io](mailto:security@anytype.io) and refer to our [security guide](https://github.com/anyproto/.github/blob/main/docs/SECURITY.md) for more information.
+🫢 For security findings, please email [security@altercpre.w8n.pw](mailto:security@altercpre.w8n.pw) and refer to our [security guide](https://github.com/altercpre/.github/blob/main/docs/SECURITY.md) for more information.
 
-🤝 Follow us on [Github](https://github.com/anyproto) and join the [Contributors Community](https://github.com/orgs/anyproto/discussions).
+🤝 Follow us on [Github](https://github.com/altercpre) and join the [Contributors Community](https://github.com/orgs/altercpre/discussions).
 
 ---
-Made by Any — a Swiss association 🇨🇭
+Made by Altercpre — privacy-first, security-focused 🔒
 
 Licensed under [MIT](./LICENSE.md).
