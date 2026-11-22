@@ -60,7 +60,7 @@ NETWORK_FILE="./storage/docker-generateconfig/network.yml"
 
 echo "INFO: Create directories for all node types"
 for NODE_TYPE in node-1 node-2 node-3 filenode coordinator consensusnode; do
-    mkdir -p "${DEST_PATH}/any-sync-${NODE_TYPE}"
+    mkdir -p "${DEST_PATH}/aparok-sync-${NODE_TYPE}"
 done
 
 echo "INFO: Create directory for S3 credentials"
@@ -78,14 +78,14 @@ echo "INFO: Generate network file"
 yq eval '. as $item | {"network": $item}' --indent 2 \
     ./storage/docker-generateconfig/nodesProcessed.yml > "${NETWORK_FILE}"
 
-echo "INFO: Generate config files for any-sync-nodes - x3"
+echo "INFO: Generate config files for aparok-sync-nodes - x3"
 for i in {0..2}; do
     cat \
         "${NETWORK_FILE}" \
         docker-generateconfig/etc/common.yml \
         storage/docker-generateconfig/account${i}.yml \
         docker-generateconfig/etc/node-$((i+1)).yml \
-        > "${DEST_PATH}/any-sync-node-$((i+1))/config.yml"
+        > "${DEST_PATH}/aparok-sync-node-$((i+1))/config.yml"
 done
 
 echo "INFO: Generate config files for coordinator, filenode, consensusnode"
@@ -96,11 +96,11 @@ for SERVICE in coordinator filenode consensusnode; do
         docker-generateconfig/etc/common.yml \
         storage/docker-generateconfig/account${SERVICE_ACCOUNTS[$SERVICE]}.yml \
         docker-generateconfig/etc/${SERVICE}.yml \
-        > "${DEST_PATH}/any-sync-${SERVICE}/config.yml"
+        > "${DEST_PATH}/aparok-sync-${SERVICE}/config.yml"
 done
 
 echo "INFO: Copy network file to coordinator directory"
-cp "storage/docker-generateconfig/nodesProcessed.yml" "${DEST_PATH}/any-sync-coordinator/network.yml"
+cp "storage/docker-generateconfig/nodesProcessed.yml" "${DEST_PATH}/aparok-sync-coordinator/network.yml"
 
 echo "INFO: Copy S3 credentials config"
 cp "docker-generateconfig/etc/aws-credentials" "${DEST_PATH}/.aws/credentials"
@@ -118,4 +118,4 @@ for FILE in $(find ${DEST_PATH}/ -name "*.yml"); do
     yq --inplace --indent=2 "${FILE}"
 done
 
-echo "INFO: === any-sync-init done ==="
+echo "INFO: === aparok-sync-init done ==="

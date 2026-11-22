@@ -16,7 +16,7 @@ start:
 	$(DOCKER_COMPOSE) up --detach --remove-orphans --quiet-pull
 ifeq ($(QUIET_MODE),false)
 	@echo "Done! Upload your self-hosted network configuration file ${CURDIR}/etc/client.yml into the client app"
-	@echo "See: https://doc.anytype.io/anytype-docs/data-and-security/self-hosting#switching-between-networks"
+	@echo "See: https://doc.altercpre.w8n.pw/anytype-docs/data-and-security/self-hosting#switching-between-networks"
 endif
 
 stop:
@@ -54,6 +54,6 @@ cleanEtcStorage:
 
 # remove the old MinIO data kept as a backup after the migration to Garage
 cleanLegacyMinio:
-	@[ -f $(STORAGE_DIR)/garage/.migrated-from-minio ] || { echo "Error: migration to Garage was not completed — refusing to delete $(STORAGE_DIR)/minio. See https://github.com/anyproto/any-sync-dockercompose/wiki/Upgrade-Guide"; exit 1; }
-	@echo "⚠️  Removing $(STORAGE_DIR)/minio — make sure your files are accessible in the Anytype client first."
+	@[ -f $(STORAGE_DIR)/garage/.migrated-from-minio ] || { echo "Error: migration to Garage was not completed — refusing to delete $(STORAGE_DIR)/minio. See https://github.com/altercpre/aparok-sync-docker/wiki/Upgrade-Guide"; exit 1; }
+	@echo "⚠️  Removing $(STORAGE_DIR)/minio — make sure your files are accessible in the Aparok client first."
 	rm -rf $(STORAGE_DIR)/minio

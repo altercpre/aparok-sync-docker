@@ -1,4 +1,4 @@
-# Garage configuration for a single-node any-sync deployment.
+# Garage configuration for a single-node aparok-sync deployment.
 # Docs: https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/
 #
 # The RPC secret is passed via the GARAGE_RPC_SECRET environment variable
@@ -15,5 +15,5 @@ rpc_public_addr = "garage:3901"
 
 [s3_api]
 api_bind_addr = "[::]:3900"
-# must match 's3Store.region' in the any-sync-filenode config (S3_REGION in .env)
+# must match 's3Store.region' in the aparok-sync-filenode config (S3_REGION in .env)
 s3_region     = "us-east-1"

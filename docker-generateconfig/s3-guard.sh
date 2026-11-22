@@ -36,7 +36,7 @@ cat >&2 <<MSG
 =================================================================================
 
  MinIO is no longer maintained upstream and has been replaced by Garage:
- https://github.com/anyproto/any-sync-dockercompose/issues/178
+ https://github.com/altercpre/aparok-sync-docker/issues/178
 
  Found ${OBJECT_COUNT} objects of the old MinIO storage in:
    ${STORAGE_DIR:-./storage}/minio/${S3_LEGACY_BUCKET:-minio-bucket}
@@ -52,7 +52,7 @@ cat >&2 <<MSG
    make start
 
  Full instructions and rollback steps:
-   https://github.com/anyproto/any-sync-dockercompose/wiki/Upgrade-Guide
+   https://github.com/altercpre/aparok-sync-docker/wiki/Upgrade-Guide
 
 =================================================================================
 

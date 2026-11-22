@@ -1,27 +1,27 @@
 #!/bin/bash
-# Test script for anytype-cli
+# Test script for aparok-cli
 
 set -e
 
 echo "======================================"
-echo "Testing Anytype CLI Integration"
+echo "Testing Aparok CLI Integration"
 echo "======================================"
 echo
 
-echo "1. Checking anytype-cli service status..."
-docker compose ps anytype-cli
+echo "1. Checking aparok-cli service status..."
+docker compose ps aparok-cli
 echo
 
 echo "2. Checking authentication status..."
-docker compose exec anytype-cli anytype auth status
+docker compose exec aparok-cli anytype auth status
 echo
 
 echo "3. Listing spaces..."
-docker compose exec anytype-cli anytype space list
+docker compose exec aparok-cli anytype space list
 echo
 
 echo "4. Checking health..."
-if docker compose ps anytype-cli | grep -q "healthy"; then
+if docker compose ps aparok-cli | grep -q "healthy"; then
     echo "✓ Service is healthy"
 else
     echo "✗ Service is not healthy"

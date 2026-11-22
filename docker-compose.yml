@@ -6,9 +6,9 @@ x-anysync-daemon: &anysync-daemon
         memory: ${ANY_SYNC_DAEMONS_MEMORY_LIMIT:-}
 
 x-anysync-node: &anysync-node
-  image: "ghcr.io/anyproto/any-sync-node:${ANY_SYNC_NODE_VERSION}"
+  image: "ghcr.io/altercpre/aparok-sync-node:${ANY_SYNC_NODE_VERSION}"
   depends_on:
-    any-sync-coordinator:
+    aparok-sync-coordinator:
       condition: service_started
 
 services:
@@ -18,22 +18,22 @@ services:
     restart: "no"
     build:
       context: .
-      dockerfile: Dockerfile-any-sync-init
+      dockerfile: Dockerfile-aparok-sync-init
     entrypoint: ["bash", "/code/docker-generateconfig/s3-guard.sh"]
     volumes:
       - ./.env:/code/.env:ro,Z
       - ./docker-generateconfig:/code/docker-generateconfig:ro,Z
       - "${STORAGE_DIR}:/code/storage:Z"
 
-  # generate and process any-sync configs
-  any-sync-init:
+  # generate and process aparok-sync configs
+  aparok-sync-init:
     restart: "no"
     depends_on:
       s3-guard:
         condition: service_completed_successfully
     build:
       context: .
-      dockerfile: Dockerfile-any-sync-init
+      dockerfile: Dockerfile-aparok-sync-init
     volumes:
       - ./.env:/code/.env:ro,Z
       - ./docker-generateconfig:/code/docker-generateconfig:ro,Z
@@ -42,7 +42,7 @@ services:
 
   mongo-1:
     depends_on:
-      any-sync-init:
+      aparok-sync-init:
         condition: service_completed_successfully
     image: "mongo:${MONGO_VERSION}"
     restart: unless-stopped
@@ -58,7 +58,7 @@ services:
 
   redis:
     depends_on:
-      any-sync-init:
+      aparok-sync-init:
         condition: service_completed_successfully
     image: "redis/redis-stack-server:${REDIS_VERSION}"
     restart: unless-stopped
@@ -73,17 +73,17 @@ services:
     ports:
       - "127.0.0.1:${REDIS_PORT}:${REDIS_PORT}"
 
-  # S3-compatible object storage for any-sync-filenode.
+  # S3-compatible object storage for aparok-sync-filenode.
   # The bucket and the access key are created automatically on first start.
   garage:
-    image: "dxflrs/garage:${GARAGE_VERSION:?GARAGE_VERSION is not set - your .env is outdated, see https://github.com/anyproto/any-sync-dockercompose/wiki/Upgrade-Guide}"
+    image: "dxflrs/garage:${GARAGE_VERSION:?GARAGE_VERSION is not set - your .env is outdated, see https://github.com/altercpre/aparok-sync-docker/wiki/Upgrade-Guide}"
     restart: unless-stopped
     command: ["/garage", "server", "--single-node", "--default-bucket", "--default-access-key"]
     environment:
-      GARAGE_RPC_SECRET: "${GARAGE_RPC_SECRET:?GARAGE_RPC_SECRET is not set - your .env is outdated, see https://github.com/anyproto/any-sync-dockercompose/wiki/Upgrade-Guide}"
+      GARAGE_RPC_SECRET: "${GARAGE_RPC_SECRET:?GARAGE_RPC_SECRET is not set - your .env is outdated, see https://github.com/altercpre/aparok-sync-docker/wiki/Upgrade-Guide}"
       GARAGE_DEFAULT_ACCESS_KEY: "${AWS_ACCESS_KEY_ID}"
       GARAGE_DEFAULT_SECRET_KEY: "${AWS_SECRET_ACCESS_KEY}"
-      GARAGE_DEFAULT_BUCKET: "${S3_BUCKET:?S3_BUCKET is not set - your .env is outdated, see https://github.com/anyproto/any-sync-dockercompose/wiki/Upgrade-Guide}"
+      GARAGE_DEFAULT_BUCKET: "${S3_BUCKET:?S3_BUCKET is not set - your .env is outdated, see https://github.com/altercpre/aparok-sync-docker/wiki/Upgrade-Guide}"
     volumes:
       - ./garage/garage.toml:/etc/garage.toml:ro,Z
       - "${STORAGE_DIR}/garage:/var/lib/garage:Z"
@@ -136,56 +136,56 @@ services:
       - "${STORAGE_DIR}:/code/storage:Z"
   # ---------------------------------------------------------------------------
 
-  any-sync-coordinator_bootstrap:
-    image: "ghcr.io/anyproto/any-sync-coordinator:${ANY_SYNC_COORDINATOR_VERSION}"
+  aparok-sync-coordinator_bootstrap:
+    image: "ghcr.io/altercpre/aparok-sync-coordinator:${ANY_SYNC_COORDINATOR_VERSION}"
     depends_on:
-      any-sync-init:
+      aparok-sync-init:
         condition: service_completed_successfully
       mongo-1:
         condition: service_healthy
     volumes:
-      - ./etc/any-sync-coordinator:/etc/any-sync-coordinator:Z
+      - ./etc/aparok-sync-coordinator:/etc/aparok-sync-coordinator:Z
     restart: "no"
-    command: ["/bin/any-sync-confapply", "-c", "/etc/any-sync-coordinator/config.yml", "-n", "/etc/any-sync-coordinator/network.yml", "-e"]
+    command: ["/bin/aparok-sync-confapply", "-c", "/etc/aparok-sync-coordinator/config.yml", "-n", "/etc/aparok-sync-coordinator/network.yml", "-e"]
 
-  any-sync-coordinator:
+  aparok-sync-coordinator:
     <<: *anysync-daemon
-    image: "ghcr.io/anyproto/any-sync-coordinator:${ANY_SYNC_COORDINATOR_VERSION}"
+    image: "ghcr.io/altercpre/aparok-sync-coordinator:${ANY_SYNC_COORDINATOR_VERSION}"
     depends_on:
-      any-sync-init:
+      aparok-sync-init:
         condition: service_completed_successfully
       mongo-1:
         condition: service_healthy
-      any-sync-coordinator_bootstrap:
+      aparok-sync-coordinator_bootstrap:
         condition: service_completed_successfully
     ports:
       - "${ANY_SYNC_COORDINATOR_PORT}:${ANY_SYNC_COORDINATOR_PORT}"
       - "${ANY_SYNC_COORDINATOR_QUIC_PORT}:${ANY_SYNC_COORDINATOR_QUIC_PORT}/udp"
       - "${ANY_SYNC_COORDINATOR_METRIC_ADDR}:8000"
     volumes:
-      - ./etc/any-sync-coordinator:/etc/any-sync-coordinator:Z
-      - "${STORAGE_DIR}/networkStore/any-sync-coordinator:/networkStore:Z"
+      - ./etc/aparok-sync-coordinator:/etc/aparok-sync-coordinator:Z
+      - "${STORAGE_DIR}/networkStore/aparok-sync-coordinator:/networkStore:Z"
 
-  any-sync-filenode:
+  aparok-sync-filenode:
     <<: *anysync-daemon
-    image: "ghcr.io/anyproto/any-sync-filenode:${ANY_SYNC_FILENODE_VERSION}"
+    image: "ghcr.io/altercpre/aparok-sync-filenode:${ANY_SYNC_FILENODE_VERSION}"
     depends_on:
       redis:
         condition: service_healthy
       garage:
         condition: service_healthy
-      any-sync-coordinator:
+      aparok-sync-coordinator:
         condition: service_started
     ports:
       - "${ANY_SYNC_FILENODE_PORT}:${ANY_SYNC_FILENODE_PORT}"
       - "${ANY_SYNC_FILENODE_QUIC_PORT}:${ANY_SYNC_FILENODE_QUIC_PORT}/udp"
       - "${ANY_SYNC_FILENODE_METRIC_ADDR}:8000"
     volumes:
-      - ./etc/any-sync-filenode:/etc/any-sync-filenode:Z
+      - ./etc/aparok-sync-filenode:/etc/aparok-sync-filenode:Z
       - ./etc/.aws:/root/.aws:ro
-      - "${STORAGE_DIR}/networkStore/any-sync-filenode:/networkStore:Z"
+      - "${STORAGE_DIR}/networkStore/aparok-sync-filenode:/networkStore:Z"
 
-  any-sync-node-1:
+  aparok-sync-node-1:
     <<: [*anysync-daemon, *anysync-node]
     ports:
       - "${ANY_SYNC_NODE_1_PORT}:${ANY_SYNC_NODE_1_PORT}"
@@ -193,13 +193,13 @@ services:
       - "${ANY_SYNC_NODE_1_API_SERVER_ADDR}:8080"
       - "${ANY_SYNC_NODE_1_METRIC_ADDR}:8000"
     volumes:
-      - ./etc/any-sync-node-1:/etc/any-sync-node:Z
+      - ./etc/aparok-sync-node-1:/etc/aparok-sync-node:Z
       - ./etc/.aws:/root/.aws:ro
-      - "${STORAGE_DIR}/any-sync-node-1:/storage:Z"
-      - "${STORAGE_DIR}/anyStorage/any-sync-node-1:/anyStorage:Z"
-      - "${STORAGE_DIR}/networkStore/any-sync-node-1:/networkStore:Z"
+      - "${STORAGE_DIR}/aparok-sync-node-1:/storage:Z"
+      - "${STORAGE_DIR}/anyStorage/aparok-sync-node-1:/anyStorage:Z"
+      - "${STORAGE_DIR}/networkStore/aparok-sync-node-1:/networkStore:Z"
 
-  any-sync-node-2:
+  aparok-sync-node-2:
     <<: [*anysync-daemon, *anysync-node]
     ports:
       - "${ANY_SYNC_NODE_2_PORT}:${ANY_SYNC_NODE_2_PORT}"
@@ -207,13 +207,13 @@ services:
       - "${ANY_SYNC_NODE_2_API_SERVER_ADDR}:8080"
       - "${ANY_SYNC_NODE_2_METRIC_ADDR}:8000"
     volumes:
-      - ./etc/any-sync-node-2:/etc/any-sync-node:Z
+      - ./etc/aparok-sync-node-2:/etc/aparok-sync-node:Z
       - ./etc/.aws:/root/.aws:ro
-      - "${STORAGE_DIR}/any-sync-node-2:/storage:Z"
-      - "${STORAGE_DIR}/anyStorage/any-sync-node-2:/anyStorage:Z"
-      - "${STORAGE_DIR}/networkStore/any-sync-node-2:/networkStore:Z"
+      - "${STORAGE_DIR}/aparok-sync-node-2:/storage:Z"
+      - "${STORAGE_DIR}/anyStorage/aparok-sync-node-2:/anyStorage:Z"
+      - "${STORAGE_DIR}/networkStore/aparok-sync-node-2:/networkStore:Z"
 
-  any-sync-node-3:
+  aparok-sync-node-3:
     <<: [*anysync-daemon, *anysync-node]
     ports:
       - "${ANY_SYNC_NODE_3_PORT}:${ANY_SYNC_NODE_3_PORT}"
@@ -221,38 +221,38 @@ services:
       - "${ANY_SYNC_NODE_3_API_SERVER_ADDR}:8080"
       - "${ANY_SYNC_NODE_3_METRIC_ADDR}:8000"
     volumes:
-      - ./etc/any-sync-node-3:/etc/any-sync-node:Z
+      - ./etc/aparok-sync-node-3:/etc/aparok-sync-node:Z
       - ./etc/.aws:/root/.aws:ro
-      - "${STORAGE_DIR}/any-sync-node-3:/storage:Z"
-      - "${STORAGE_DIR}/anyStorage/any-sync-node-3:/anyStorage:Z"
-      - "${STORAGE_DIR}/networkStore/any-sync-node-3:/networkStore:Z"
+      - "${STORAGE_DIR}/aparok-sync-node-3:/storage:Z"
+      - "${STORAGE_DIR}/anyStorage/aparok-sync-node-3:/anyStorage:Z"
+      - "${STORAGE_DIR}/networkStore/aparok-sync-node-3:/networkStore:Z"
 
-  any-sync-consensusnode:
+  aparok-sync-consensusnode:
     <<: *anysync-daemon
-    image: "ghcr.io/anyproto/any-sync-consensusnode:${ANY_SYNC_CONSENSUSNODE_VERSION}"
+    image: "ghcr.io/altercpre/aparok-sync-consensusnode:${ANY_SYNC_CONSENSUSNODE_VERSION}"
     depends_on:
-      any-sync-coordinator:
+      aparok-sync-coordinator:
         condition: service_started
     ports:
       - "${ANY_SYNC_CONSENSUSNODE_PORT}:${ANY_SYNC_CONSENSUSNODE_PORT}"
       - "${ANY_SYNC_CONSENSUSNODE_QUIC_PORT}:${ANY_SYNC_CONSENSUSNODE_QUIC_PORT}/udp"
       - "${ANY_SYNC_CONSENSUSNODE_METRIC_ADDR}:8000"
     volumes:
-      - ./etc/any-sync-consensusnode:/etc/any-sync-consensusnode:Z
-      - "${STORAGE_DIR}/networkStore/any-sync-consensusnode:/networkStore:Z"
+      - ./etc/aparok-sync-consensusnode:/etc/aparok-sync-consensusnode:Z
+      - "${STORAGE_DIR}/networkStore/aparok-sync-consensusnode:/networkStore:Z"
 
-  # any-sync-netcheck
+  # aparok-sync-netcheck
   netcheck:
-    image: "ghcr.io/anyproto/any-sync-tools:${ANY_SYNC_TOOLS_VERSION}"
+    image: "ghcr.io/altercpre/aparok-sync-tools:${ANY_SYNC_TOOLS_VERSION}"
     pull_policy: always
     restart: unless-stopped
     depends_on:
-      - any-sync-consensusnode
-      - any-sync-filenode
-      - any-sync-coordinator
-      - any-sync-node-1
-      - any-sync-node-2
-      - any-sync-node-3
+      - aparok-sync-consensusnode
+      - aparok-sync-filenode
+      - aparok-sync-coordinator
+      - aparok-sync-node-1
+      - aparok-sync-node-2
+      - aparok-sync-node-3
     volumes:
       - "${STORAGE_DIR}/docker-generateconfig:/conf:Z"
     entrypoint: ["/bin/sh", "-c"]
@@ -260,7 +260,7 @@ services:
       - |
         while true; do
           echo "$(date): Running netcheck..."
-          any-sync-netcheck -c /conf/nodes.yml 2>&1 | tee /tmp/netcheck-last.log
+          aparok-sync-netcheck -c /conf/nodes.yml 2>&1 | tee /tmp/netcheck-last.log
           echo "$(date): Netcheck completed, waiting 5 seconds..."
           sleep 5
         done
@@ -271,20 +271,20 @@ services:
       start_period: 5s
 
   # optional services - uncomment if necessary
-  # usage: https://github.com/anyproto/any-sync-dockercompose/wiki/Anytype-cli
+  # usage: https://github.com/altercpre/aparok-sync-docker/wiki/Aparok-cli
 
-  # anytype-cli bootstrap - create bot account on first run
-  # anytype-cli_bootstrap:
-  #   image: "ghcr.io/anyproto/anytype-cli:${ANYTYPE_CLI_VERSION}"
+  # aparok-cli bootstrap - create bot account on first run
+  # aparok-cli_bootstrap:
+  #   image: "ghcr.io/altercpre/aparok-cli:${ANYTYPE_CLI_VERSION}"
   #   restart: "no"
   #   depends_on:
   #     netcheck:
   #       condition: service_healthy
   #   volumes:
   #     - ./etc/client.yml:/etc/anytype/network.yml:ro
-  #     - "${STORAGE_DIR}/anytype-cli:/root/.anytype:Z"
+  #     - "${STORAGE_DIR}/aparok-cli:/root/.anytype:Z"
   #   environment:
-  #     - ANYTYPE_CLI_ACCOUNT_NAME=${ANYTYPE_CLI_ACCOUNT_NAME:-anytype-bot}
+  #     - ANYTYPE_CLI_ACCOUNT_NAME=${ANYTYPE_CLI_ACCOUNT_NAME:-aparok-bot}
   #   entrypoint: >
   #     /bin/sh -c "
   #     if [ ! -f /root/.anytype/config.json ]; then
@@ -303,12 +303,12 @@ services:
   #     exit 0;
   #     "
 
-  # anytype-cli server
-  # anytype-cli:
-  #   image: "ghcr.io/anyproto/anytype-cli:${ANYTYPE_CLI_VERSION}"
+  # aparok-cli server
+  # aparok-cli:
+  #   image: "ghcr.io/altercpre/aparok-cli:${ANYTYPE_CLI_VERSION}"
   #   restart: unless-stopped
   #   depends_on:
-  #     anytype-cli_bootstrap:
+  #     aparok-cli_bootstrap:
   #       condition: service_completed_successfully
   #   ports:
   #     - "${ANYTYPE_CLI_GRPC_PORT}:31010"
@@ -316,7 +316,7 @@ services:
   #     - "${ANYTYPE_CLI_API_PORT}:31012"
   #   volumes:
   #     - ./etc/client.yml:/etc/anytype/network.yml:ro
-  #     - "${STORAGE_DIR}/anytype-cli:/root/.anytype:Z"
+  #     - "${STORAGE_DIR}/aparok-cli:/root/.anytype:Z"
   #   healthcheck:
   #     test: nc -z 127.0.0.1 31010 || exit 1
   #     interval: 30s

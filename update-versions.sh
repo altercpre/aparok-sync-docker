@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fetches the latest compatible any-sync versions from puppetdoc.anytype.io
+# Fetches the latest compatible aparok-sync versions from puppetdoc.altercpre.w8n.pw
 # and updates the version variables in .env in-place.
 #
 # Usage:
@@ -20,7 +20,7 @@ for arg in "$@"; do
     esac
 done
 
-API_URL="https://puppetdoc.anytype.io/api/v1/${CHANNEL}-any-sync-compatible-versions/"
+API_URL="https://puppetdoc.altercpre.w8n.pw/api/v1/${CHANNEL}-aparok-sync-compatible-versions/"
 
 for cmd in curl jq; do
     command -v "$cmd" >/dev/null 2>&1 || { echo "Error: '$cmd' is required but not installed."; exit 1; }
@@ -39,10 +39,10 @@ response=$(curl -fsSL --max-time 10 "$API_URL") || {
 
 versions=$(echo "$response" | jq -r 'to_entries | sort_by(.key | tonumber) | last | .value')
 
-node_version=$(echo "$versions" | jq -r '."pkg::any-sync-node"')
-filenode_version=$(echo "$versions" | jq -r '."pkg::any-sync-filenode"')
-coordinator_version=$(echo "$versions" | jq -r '."pkg::any-sync-coordinator"')
-consensusnode_version=$(echo "$versions" | jq -r '."pkg::any-sync-consensusnode"')
+node_version=$(echo "$versions" | jq -r '."pkg::aparok-sync-node"')
+filenode_version=$(echo "$versions" | jq -r '."pkg::aparok-sync-filenode"')
+coordinator_version=$(echo "$versions" | jq -r '."pkg::aparok-sync-coordinator"')
+consensusnode_version=$(echo "$versions" | jq -r '."pkg::aparok-sync-consensusnode"')
 
 for v in "$node_version" "$filenode_version" "$coordinator_version" "$consensusnode_version"; do
     if [[ "$v" == "null" || -z "$v" ]]; then

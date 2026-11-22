@@ -1,5 +1,5 @@
 #!/bin/sh
-# One-off migration of any-sync-filenode blobs from MinIO to Garage.
+# One-off migration of aparok-sync-filenode blobs from MinIO to Garage.
 # Runs inside the rclone image, started by:
 #   docker compose --profile migrate run --rm s3-migrate
 set -e
@@ -70,7 +70,7 @@ cat <<MSG
    docker compose up -d        (or: make start)
 
  The old MinIO data is kept untouched as a backup. Once you have confirmed that
- your files are accessible from the Anytype client, you can remove it:
+ your files are accessible from the Aparok client, you can remove it:
 
    rm -rf ./storage/minio      (or: make cleanLegacyMinio)
 
