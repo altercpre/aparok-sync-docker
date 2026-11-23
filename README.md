@@ -1,4 +1,4 @@
-# Docker Compose for aparok-sync
+# Docker Compose for Aparok Sync
 
 A self-hosted aparok-sync network, designed for personal use, review, or testing purposes.
 
